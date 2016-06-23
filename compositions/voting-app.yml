@@ -1,0 +1,37 @@
+version: '2'
+services:
+  result:
+    image: 'containers101/cf-example-result:master'
+    command: nodemon --debug server.js
+    ports:
+    #if you have private infrastucture, you can set this to a specific port (for example 5000:80) so you will always have the same port when testing your application
+      - "80"
+    links:
+      - "postgress:db"
+    environment:
+    #this can be set to a composition variable if you like VOTE_OPTION_A and VOTE_OPTION_B and be used in the composition with $VOTE_OPTION_A and $VOTE_OPTION_B
+      - OPTION_A=Cats
+      - OPTION_B=Dogs
+  worker:
+    image: 'containers101/cf-example-worker:master'
+    links:
+      - "postgress:db"
+      - "redis:redis"
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - "6379"
+  vote:
+    image: 'containers101/cf-example-vote:master'
+    command: python app.py
+    ports:
+    #if you have private infrastucture, you can set this to a specific port (for example 5001:80) so you will always have the same port when testing your application
+      - "80"
+    links:
+      - "redis:redis"
+    environment:
+    #this can be set to a composition variable if you like VOTE_OPTION_A and VOTE_OPTION_B and be used in the composition with $VOTE_OPTION_A and $VOTE_OPTION_B
+      - OPTION_A=Cats
+      - OPTION_B=Dogs
+  postgress:
+    image: 'postgres:9.4'
